@@ -1,56 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
-import './ClientManagement.css'; // Ensure the path is correct
-import { states, cities, nationalities } from './stateCityData'; // Assuming these are correctly exported
+import './ClientManagement.css';
+import { states, cities, nationalities } from './stateCityData';
 
 const Client = () => {
-    const [clientForm, setClientForm] = useState({
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        fulName: '', // Make sure this is initialized
-        dateOfBirth: '',
-        motherName: '',
-        gender: '',
-        religion: '',
-        nationality: '',
-        maritalStatus: '',
-        nationalIdNumber: '',
-        passportNumber: '',
-        passportExpiryDate: '',
-        address: '',
-        city: '',
-        stateOrProvince: '',
-        postalCode: '',
-        phoneNumber: '',
-        email: '',
-        hasDisability: false,
-        disabilityType: '',
-        needsSpecialAssistance: false,
-        assistanceType: '',
-        hasPreviousMedicalCondition: false,
-        medicalConditions: [],
-        hasSurgeryInLastTwoYears: false,
-        surgeryDetails: '',
-        passengerCode: '',
-        photo: '',
-      });
-      
-      
-  
+  const [clientForm, setClientForm] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    fullName: '', // Ensure this is initialized
+    dateOfBirth: '',
+    motherName: '',
+    gender: '',
+    religion: '',
+    nationality: '',
+    maritalStatus: '',
+    nationalIdNumber: '',
+    passportNumber: '',
+    passportExpiryDate: '',
+    address: '',
+    city: '',
+    stateOrProvince: '',
+    postalCode: '',
+    phoneNumber: '',
+    email: '',
+    hasDisability: false,
+    disabilityType: '',
+    needsSpecialAssistance: false,
+    assistanceType: '',
+    hasPreviousMedicalCondition: false,
+    medicalConditions: [],
+    hasSurgeryInLastTwoYears: false,
+    surgeryDetails: '',
+    passengerCode: '',
+    photo: '',
+  });
+
   const [photo, setPhoto] = useState(null);
   const [availableCities, setAvailableCities] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Calculate max and min dates for Date of Birth
-  const currentDate = new Date().toISOString().split('T')[0]; // Max Date: Today
+  const currentDate = new Date().toISOString().split('T')[0];
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 100))
     .toISOString()
-    .split('T')[0]; // Min Date: 100 years ago
+    .split('T')[0];
 
-  // Handle input changes
+  useEffect(() => {
+    setClientForm((prev) => ({
+      ...prev,
+      fullName: `${prev.firstName} ${prev.middleName} ${prev.lastName}`.trim(),
+    }));
+  }, [clientForm.firstName, clientForm.middleName, clientForm.lastName]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setClientForm({
@@ -59,23 +62,20 @@ const Client = () => {
     });
   };
 
-  // Handle state change to update available cities
   const handleStateChange = (selectedOption) => {
     const state = selectedOption ? selectedOption.value : '';
     setClientForm({ ...clientForm, stateOrProvince: state, city: '' });
     setAvailableCities(cities[state] || []);
   };
 
-  // Handle city change
   const handleCityChange = (selectedOption) => {
     setClientForm({ ...clientForm, city: selectedOption ? selectedOption.value : '' });
   };
-  
+
   const handlePhotoChange = (e) => {
-    setPhoto(e.target.files[0]); // Store the uploaded file
+    setPhoto(e.target.files[0]);
   };
 
-  // Handle medical condition selection
   const handleMedicalConditionChange = (condition) => {
     setClientForm((prevState) => {
       const medicalConditions = prevState.medicalConditions.includes(condition)
@@ -85,21 +85,18 @@ const Client = () => {
     });
   };
 
-  // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-  
-    // Append all clientForm data to FormData
+
     for (const key in clientForm) {
       formData.append(key, clientForm[key]);
     }
-  
-    // Append the photo if it's selected
+
     if (photo) {
       formData.append('photo', photo);
     }
-  
+
     try {
       await axios.post('http://localhost:5000/api/clients', formData, {
         headers: {
@@ -107,12 +104,11 @@ const Client = () => {
         },
       });
       setSuccessMessage('Client added successfully!');
-      // Reset form
       setClientForm({
         firstName: '',
         middleName: '',
         lastName: '',
-        fullName: '', // Resetting the field
+        fullName: '',
         dateOfBirth: '',
         motherName: '',
         gender: '',
@@ -157,6 +153,7 @@ const Client = () => {
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
           {/* Personal Information */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* First Name */}
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">First Name</label>
               <input
@@ -168,6 +165,7 @@ const Client = () => {
                 required
               />
             </div>
+            {/* Middle Name */}
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Middle Name</label>
               <input
@@ -178,6 +176,7 @@ const Client = () => {
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
               />
             </div>
+            {/* Last Name */}
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Last Name</label>
               <input
@@ -189,17 +188,17 @@ const Client = () => {
                 required
               />
             </div>
+            {/* Full Name */}
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Full Name</label>
               <input
-  type="text"
-  name="fulName"
-  value={clientForm.fulName || ''} // Ensure it never goes undefined
-  onChange={handleChange}
-  className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
-  required
-/>
-
+                type="text"
+                name="fullName"
+                value={clientForm.fullName || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                required
+              />
             </div>
           </div>
 
@@ -243,37 +242,24 @@ const Client = () => {
                 required
               >
                 <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
               </select>
             </div>
-          </div>
-
-          {/* Nationality, Religion, and Marital Status */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Nationality */}
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Nationality</label>
               <Select
-                options={nationalities}
-                value={nationalities.find(option => option.value === clientForm.nationality)}
-                onChange={selectedOption => setClientForm({ ...clientForm, nationality: selectedOption.value })}
+                options={nationalities.map(nat => ({ value: nat, label: nat }))}
+                onChange={(option) => setClientForm({ ...clientForm, nationality: option.value })}
                 className="basic-single"
                 classNamePrefix="select"
-                required
+                isClearable
+                placeholder="Select Nationality"
               />
             </div>
-            <div className="col-span-1">
-              <label className="block text-gray-700 font-bold mb-2">Religion</label>
-              <input
-                type="text"
-                name="religion"
-                value={clientForm.religion}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
-                required
-              />
-            </div>
+            {/* Marital Status */}
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Marital Status</label>
               <select
@@ -284,15 +270,15 @@ const Client = () => {
                 required
               >
                 <option value="">Select Marital Status</option>
-                <option value="single">Single</option>
-                <option value="married">Married</option>
-                <option value="divorced">Divorced</option>
-                <option value="widowed">Widowed</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Divorced">Divorced</option>
+                <option value="Widowed">Widowed</option>
               </select>
             </div>
           </div>
 
-          {/* Identification Numbers */}
+          {/* National ID and Passport */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">National ID Number</label>
@@ -302,6 +288,7 @@ const Client = () => {
                 value={clientForm.nationalIdNumber}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                required
               />
             </div>
             <div className="col-span-1">
@@ -312,6 +299,7 @@ const Client = () => {
                 value={clientForm.passportNumber}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                required
               />
             </div>
             <div className="col-span-1">
@@ -326,7 +314,7 @@ const Client = () => {
             </div>
           </div>
 
-          {/* Address Information */}
+          {/* Address */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Address</label>
@@ -336,33 +324,34 @@ const Client = () => {
                 value={clientForm.address}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                required
               />
             </div>
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">City</label>
               <Select
-                options={availableCities}
-                value={availableCities.find(option => option.value === clientForm.city)}
+                options={availableCities.map(city => ({ value: city, label: city }))}
                 onChange={handleCityChange}
                 className="basic-single"
                 classNamePrefix="select"
-                required
+                isClearable
+                placeholder="Select City"
               />
             </div>
             <div className="col-span-1">
-              <label className="block text-gray-700 font-bold mb-2">State/Province</label>
+              <label className="block text-gray-700 font-bold mb-2">State / Province</label>
               <Select
-                options={states}
-                value={states.find(option => option.value === clientForm.stateOrProvince)}
+                options={states.map(state => ({ value: state, label: state }))}
                 onChange={handleStateChange}
                 className="basic-single"
                 classNamePrefix="select"
-                required
+                isClearable
+                placeholder="Select State"
               />
             </div>
           </div>
 
-          {/* Contact Information */}
+          {/* Postal Code and Phone */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Postal Code</label>
@@ -372,12 +361,13 @@ const Client = () => {
                 value={clientForm.postalCode}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                required
               />
             </div>
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Phone Number</label>
               <input
-                type="tel"
+                type="text"
                 name="phoneNumber"
                 value={clientForm.phoneNumber}
                 onChange={handleChange}
@@ -398,16 +388,15 @@ const Client = () => {
             </div>
           </div>
 
-          {/* Disability Information */}
+          {/* Disability and Medical Conditions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
-              <label className="block text-gray-700 font-bold mb-2">Has Disability?</label>
+              <label className="block text-gray-700 font-bold mb-2">Has Disability</label>
               <input
                 type="checkbox"
                 name="hasDisability"
                 checked={clientForm.hasDisability}
                 onChange={handleChange}
-                className="mr-2"
               />
             </div>
             <div className="col-span-1">
@@ -418,7 +407,7 @@ const Client = () => {
                 value={clientForm.disabilityType}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
-                disabled={!clientForm.hasDisability} // Disable if no disability
+                disabled={!clientForm.hasDisability}
               />
             </div>
           </div>
@@ -426,13 +415,12 @@ const Client = () => {
           {/* Special Assistance */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
-              <label className="block text-gray-700 font-bold mb-2">Needs Special Assistance?</label>
+              <label className="block text-gray-700 font-bold mb-2">Needs Special Assistance</label>
               <input
                 type="checkbox"
                 name="needsSpecialAssistance"
                 checked={clientForm.needsSpecialAssistance}
                 onChange={handleChange}
-                className="mr-2"
               />
             </div>
             <div className="col-span-1">
@@ -443,46 +431,79 @@ const Client = () => {
                 value={clientForm.assistanceType}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
-                disabled={!clientForm.needsSpecialAssistance} // Disable if no assistance needed
+                disabled={!clientForm.needsSpecialAssistance}
               />
             </div>
           </div>
 
-          {/* Medical History */}
+          {/* Medical Conditions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="col-span-1">
-              <label className="block text-gray-700 font-bold mb-2">Has Previous Medical Condition?</label>
+              <label className="block text-gray-700 font-bold mb-2">Has Previous Medical Condition</label>
               <input
                 type="checkbox"
                 name="hasPreviousMedicalCondition"
                 checked={clientForm.hasPreviousMedicalCondition}
                 onChange={handleChange}
-                className="mr-2"
               />
             </div>
             <div className="col-span-1">
               <label className="block text-gray-700 font-bold mb-2">Medical Conditions</label>
-              <div>
-                {['Diabetes', 'Heart Disease', 'Asthma', 'None'].map(condition => (
-                  <div key={condition}>
-                    <input
-                      type="checkbox"
-                      checked={clientForm.medicalConditions.includes(condition)}
-                      onChange={() => handleMedicalConditionChange(condition)}
-                      className="mr-2"
-                    />
-                    <label>{condition}</label>
-                  </div>
-                ))}
-              </div>
+              <input
+                type="text"
+                name="medicalConditions"
+                value={clientForm.medicalConditions.join(', ')} // Join for display purposes
+                onChange={(e) => handleMedicalConditionChange(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                disabled={!clientForm.hasPreviousMedicalCondition}
+              />
+            </div>
+          </div>
+
+          {/* Surgery Details */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="col-span-1">
+              <label className="block text-gray-700 font-bold mb-2">Surgery in Last 5 Years</label>
+              <input
+                type="checkbox"
+                name="hadSurgeryLast5Years"
+                checked={clientForm.hadSurgeryLast5Years}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="col-span-1">
+              <label className="block text-gray-700 font-bold mb-2">Surgery Details</label>
+              <input
+                type="text"
+                name="surgeryDetails"
+                value={clientForm.surgeryDetails}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:outline-none focus:border-blue-500"
+                disabled={!clientForm.hadSurgeryLast5Years}
+              />
+            </div>
+          </div>
+
+          {/* Consent */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="col-span-1">
+              <label className="block text-gray-700 font-bold mb-2">Consent</label>
+              <input
+                type="checkbox"
+                name="consent"
+                checked={clientForm.consent}
+                onChange={handleChange}
+                required
+              />
+              <span className="text-gray-600 ml-2">I consent to the terms and conditions.</span>
             </div>
           </div>
 
           {/* Submit Button */}
-          <div className="mt-4">
+          <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline"
+              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200"
             >
               Submit
             </button>
@@ -491,6 +512,6 @@ const Client = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Client;
