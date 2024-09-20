@@ -12,7 +12,7 @@ const clientSchema = new mongoose.Schema({
   nationality: { type: String, required: true },
   maritalStatus: { type: String, required: true },
   nationalIdNumber: { type: String, required: true },
-  passportNumber: { type: String, required: true },
+  passportNumber: { type: String, required: true,unique: true, },
   passportExpiryDate: { type: Date, required: true },
   address: { type: String, required: true },
   city: { type: String, required: true },
