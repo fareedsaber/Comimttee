@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -14,26 +13,38 @@ const userSchema = new Schema({
   password: { 
     type: String, 
     required: true, 
-    
   },
   center: { 
     type: Schema.Types.ObjectId, 
     ref: 'Center',
     required: function() {
-      return this.role !== 'superAdmin'; // Center is required unless role is superAdmin
+      return this.role !== 'superAdmin'; // Center is required unless the user is a superAdmin
     }
   },
   role: {
     type: String,
     enum: ['superAdmin', 'centerAdmin', 'centerUser'],
     required: true
+  },
+  
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true // Track who created the user
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null // Track who last updated the user
+  },
+  deletedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null // Track who deleted the user (if using soft delete)
   }
-  
-  
+
 }, {
   timestamps: true
 });
-
-
 
 module.exports = mongoose.model('User', userSchema);

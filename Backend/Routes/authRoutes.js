@@ -33,8 +33,22 @@ const isSuperAdmin = (req, res, next) => {
   }
 };
 
+// Get user count and stats
+router.get('/users/count', async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const rate = 5; // Example static rate
+    const levelUp = true;
+    const levelDown = false;
+
+    res.json({ totalUsers, rate, levelUp, levelDown });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching user stats' });
+  }
+});
+
 // POST: Create a new superAdmin
-router.post('/createSuperAdmin', async (req, res) => {
+router.post('/createSuperAdmin', checkAuth,isSuperAdmin, async (req, res) => {
   const { username, password } = req.body;
 
   try {
@@ -51,7 +65,7 @@ router.post('/createSuperAdmin', async (req, res) => {
     // Create a new user with the superAdmin role
     const superAdmin = new User({
       username,
-      password,  // Assuming you're hashing passwords elsewhere
+      password,  // Plain text password
       role: 'superAdmin',
     });
 
@@ -64,6 +78,8 @@ router.post('/createSuperAdmin', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// POST: Login
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -74,8 +90,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Verify password (assuming plain text comparison for now, use bcrypt for hashed passwords)
-    const isPasswordValid = password === user.password; // Replace with bcrypt.compare if passwords are hashed
+    // Verify password (plain text comparison)
+    const isPasswordValid = password === user.password;
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -101,6 +117,5 @@ router.post('/login', async (req, res) => {
     }
   }
 });
-
 
 module.exports = router;
